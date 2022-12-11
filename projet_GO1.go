@@ -3,6 +3,7 @@ package main
 import (
     "fmt"
     "log"
+    "os/exec"
     "strings"
 
     "github.com/OJ/gobuster"
@@ -12,7 +13,6 @@ import (
 
 func main() {
     var target string
-    var wordlist string
     var threads int
 
     rootCmd := &cobra.Command{
@@ -20,7 +20,7 @@ func main() {
         Short: "Scan a target for open ports",
         Run: func(cmd *cobra.Command, args []string) {
             gb := gobuster.New(target)
-            gb.Wordlist = wordlist
+            gb.Wordlist = "/usr/share/wordlists/dirbuster/common.txt"
             gb.Threads = threads
 
             if err := gb.Start(); err != nil {
@@ -58,12 +58,11 @@ func main() {
             }
 
             fmt.Printf("Open ports (nmap): %v\n", openPorts)
-        },
-    }
 
-    rootCmd.Flags().StringVarP(&target, "target", "t", "", "The target URL to scan")
-    rootCmd.Flags().StringVarP(&wordlist, "wordlist", "w", "/usr/share/wordlists/dirbuster/common.txt", "The path to the wordlist to use")
-    rootCmd.Flags().IntVarP(&threads, "threads", "T", 20, "The number of worker threads to use")
+            if out, err := exec.Command("zap-cli", "--zap-url", "http://localhost:8080", "status").Output(); err != nil {
+                log.Fatal(err)
+            } else {
+                fmt.Printf("OWASP ZAP status: %s\n", out)
+            }
 
-    if err := rootCmd.Execute(); err != nil {
-        log.Fatal(err
+            if out, err := exec.Command("openvas-check-setup").Output();

@@ -1,68 +1,75 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "os/exec"
-    "strings"
+        "fmt"
+        "os"
 
-    "github.com/OJ/gobuster"
-    "github.com/Ullaakut/nmap"
-    "github.com/spf13/cobra"
+        "github.com/spf13/cobra"
+        "github.com/OJ/gobuster"
+        "github.com/OJ/gobuster/v3/libgobuster"
+        "github.com/OJ/gobuster/v3/libgobuster/plugins/common"
 )
 
-func main() {
-    var target string
-    var threads int
+var (
+        target string
+        ports  string
+        workers int
+        quiet  bool
+        help   bool
+)
 
-    rootCmd := &cobra.Command{
-        Use:   "port-scanner",
-        Short: "Scan a target for open ports",
+func init() {
+        cobra.OnInitialize(initConfig)
+        rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "", "Target host or IP address")
+        rootCmd.PersistentFlags().StringVarP(&ports, "ports", "p", "", "Comma-separated list of ports to scan")
+        rootCmd.PersistentFlags().IntVarP(&workers, "workers", "w", 10, "Number of workers to use for port scanning")
+        rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Only show open ports")
+        rootCmd.PersistentFlags().BoolVarP(&help, "help", "h", false, "Show help message")
+}
+
+func initConfig() {
+        // Initialize configuration here if necessary
+}
+
+var rootCmd = &cobra.Command{
+        Use:   "scanner",
+        Short: "Scan target host for open ports and web server directories and files",
+        Long:  `Scan target host for open ports and web server directories and files`,
         Run: func(cmd *cobra.Command, args []string) {
-            gb := gobuster.New(target)
-            gb.Wordlist = "/usr/share/wordlists/dirbuster/common.txt"
-            gb.Threads = threads
-
-            if err := gb.Start(); err != nil {
-                log.Fatal(err)
-            }
-
-            fmt.Printf("Open ports (gobuster): %v\n", gb.OpenPorts())
-
-            scanner, err := nmap.NewScanner(
-                nmap.WithTargets(strings.Split(target, ",")...),
-                nmap.WithPorts("1-65535"),
-                nmap.WithServiceInfo(),
-            )
-            if err != nil {
-                log.Fatal(err)
-            }
-
-            result, err := scanner.Run()
-            if err != nil {
-                log.Fatal(err)
-            }
-
-            openPorts := []string{}
-            for _, host := range result.Hosts {
-                if len(host.Ports) == 0 || len(host.Addresses) == 0 {
-                    continue
+                // Check if target host was specified
+                if target == "" {
+                        fmt.Println("Error: Target host not specified")
+                        os.Exit(1)
                 }
 
-                address := host.Addresses[0]
-                for _, port := range host.Ports {
-                    if port.State.State == "open" {
-                        openPorts = append(openPorts, fmt.Sprintf("%s:%d/%s", address, port.ID, port.Service.Name))
-                    }
+                // Check if ports were specified
+                if ports == "" {
+                        // If not, scan all ports
+                        ports = "1-65535"
                 }
-            }
 
-            fmt.Printf("Open ports (nmap): %v\n", openPorts)
+                // Scan target host for open ports
+                fmt.Println("Scanning target host for open ports...")
+                nmapOutput, err := libgobuster.Nmap(target, ports, workers)
+                if err != nil {
+                        fmt.Println(err)
+                        os.Exit(1)
+                }
 
-            if out, err := exec.Command("zap-cli", "--zap-url", "http://localhost:8080", "status").Output(); err != nil {
-                log.Fatal(err)
-            } else {
-                fmt.Printf("OWASP ZAP status: %s\n", out)
-            }
+                // Parse nmap output and print open ports
+                openPorts := common.ParseNmap(nmapOutput)
+                if len(openPorts) == 0 {
+                        fmt.Println("No open ports found")
+                        os.Exit(0)
+                }
 
-            if out, err := exec.Command("openvas-check-setup").Output();
+                fmt.Println("Open ports:")
+                for _, port := range openPorts {
+                        fmt.Println(port)
+                }
+
+                // Enumerate directories and files on web server, if port 80 or 443 is open
+                if common.StringInSlice("80", openPorts) || common.StringInSlice("443", openPorts) {
+                        fmt.Println("\nEnumerating directories and files on web server...")
+
+                        // Create

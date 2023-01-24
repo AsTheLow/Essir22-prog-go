@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -45,11 +46,18 @@ func main() {
 func scanPorts(target string, ports string, workers int, quiet bool) {
 	portsList := parsePorts(ports)
 	var wg sync.WaitGroup
+	var openPorts []int
 	wg.Add(len(portsList))
 
+	// Utilisez un nombre de workers défini pour scanner en parallèle
+	sem := make(chan bool, workers)
 	for _, port := range portsList {
+		sem <- true
 		go func(port int) {
+			defer func() { <-sem }()
 			defer wg.Done()
+
+			// Utilisez net.Dial pour établir une connexion TCP avec la cible sur le port spécifié
 			address := fmt.Sprintf("%s:%d", target, port)
 			conn, err := net.DialTimeout("tcp", address, time.Second*5)
 			if err != nil {
@@ -59,11 +67,14 @@ func scanPorts(target string, ports string, workers int, quiet bool) {
 				return
 			}
 			conn.Close()
-			fmt.Printf("Port %d is open\n", port)
+			openPorts = append(openPorts, port)
 		}(port)
 	}
 	wg.Wait()
+	sort.Ints(openPorts)
+	fmt.Println("Open Ports:", openPorts)
 }
+
 func parsePorts(ports string) []int {
 	var portsList []int
 	if ports == "all" {
@@ -90,5 +101,6 @@ func parsePorts(ports string) []int {
 			portsList = append(portsList, i)
 		}
 	}
+	sort.Ints(portsList)
 	return portsList
 }

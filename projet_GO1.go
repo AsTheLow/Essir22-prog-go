@@ -1,72 +1,94 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "os"
+	"fmt"
+	"log"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 
-    "github.com/spf13/cobra"
-
-    "github.com/OJ/gobuster"
-    "github.com/OJ/gobuster/v3/libgobuster"
+	"github.com/spf13/cobra"
 )
 
-var (
-    rootCmd = &cobra.Command{
-        Use:   "my-cli",
-        Short: "My command-line interface",
-        Long:  "A sample CLI application using gobuster and spf13/cobra",
-        Run: func(cmd *cobra.Command, args []string) {
-            // Print usage information if no arguments are provided
-            if len(args) == 0 {
-                cmd.Usage()
-                return
-            }
+var target string
+var ports string
+var workers int
+var quiet bool
 
-            // Get the target URL and wordlist from the arguments
-            url := args[0]
-            wordlist := args[1]
-
-            // Enumerate directories and files on the web server using gobuster
-            enumerateWebServer(url, wordlist)
-        },
-    }
-)
-
-func main() {
-    // Define flags for the root command
-    rootCmd.Flags().StringP("target", "t", "", "target host or IP address")
-    rootCmd.Flags().StringSliceP("ports", "p", []string{}, "target port(s)")
-    rootCmd.Flags().IntP("workers", "w", 10, "number of concurrent workers")
-    rootCmd.Flags().BoolP("quiet", "q", false, "don't show banner and logo")
-
-    // Parse command-line arguments
-    if err := rootCmd.Execute(); err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+var rootCmd = &cobra.Command{
+	Use:   "portscan",
+	Short: "A simple port scanner",
+	Long:  `A simple port scanner that can scan a range of ports on a target IP`,
+	Run: func(cmd *cobra.Command, args []string) {
+		scanPorts(target, ports, workers, quiet)
+	},
 }
 
-func enumerateWebServer(url string, wordlist string) {
-    // Create a new gobuster instance
-    gb := gobuster.New(url, wordlist, &libgobuster.Options{
-        Threads:  10,
-        Quiet:    true,
-        Verbose:  false,
-        NoColor:  false,
-        ShowIPs:  false,
-        Recursive: false,
-        WildcardForced: false,
-    })
+func init() {
+	rootCmd.Flags().StringVarP(&target, "target", "t", "", "the target IP to scan")
+	rootCmd.MarkFlagRequired("target")
 
-    // Enumerate directories and files on the web server
-    err := gb.Start()
-    if err != nil {
-        log.Fatal(err)
-    }
+	rootCmd.Flags().StringVarP(&ports, "ports", "p", "", "the range of ports to scan (examples: 1024-65535, all)")
+	rootCmd.MarkFlagRequired("ports")
 
-    // Print the results
-    for _, result := range gb.Results() {
-        fmt.Println(result.String())
-    }
+	rootCmd.Flags().IntVarP(&workers, "workers", "w", 1, "the number of workers to use for scanning in parallel")
+
+	rootCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "don't log, only show results")
+}
+
+func main() {
+	rootCmd.Execute()
+}
+
+func scanPorts(target string, ports string, workers int, quiet bool) {
+	portsList := parsePorts(ports)
+	var wg sync.WaitGroup
+	wg.Add(len(portsList))
+
+	for _, port := range portsList {
+		go func(port int) {
+			defer wg.Done()
+			address := fmt.Sprintf("%s:%d", target, port)
+			conn, err := net.DialTimeout("tcp", address, time.Second*5)
+			if err != nil {
+				if !quiet {
+					fmt.Printf("Port %d is closed\n", port)
+				}
+				return
+			}
+			conn.Close()
+			fmt.Printf("Port %d is open\n", port)
+		}(port)
+	}
+	wg.Wait()
+}
+func parsePorts(ports string) []int {
+	var portsList []int
+	if ports == "all" {
+		for i := 1; i <= 65535; i++ {
+			portsList = append(portsList, i)
+		}
+	} else {
+		parts := strings.Split(ports, "-")
+		if len(parts) != 2 {
+			log.Fatalf("Invalid port range: %s", ports)
+		}
+		start, err := strconv.Atoi(parts[0])
+		if err != nil {
+			log.Fatalf("Invalid start port: %s", parts[0])
+		}
+		end, err := strconv.Atoi(parts[1])
+		if err != nil {
+			log.Fatalf("Invalid end port: %s", parts[1])
+		}
+		if end < start {
+			log.Fatalf("Invalid port range: %s", ports)
+		}
+		for i := start; i <= end; i++ {
+			portsList = append(portsList, i)
+		}
+	}
+	return portsList
 }

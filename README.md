@@ -12,35 +12,6 @@ go mod tidy
 
 Fonction expliqué 
 
-func parsePorts(ports string) []int {
-	var portsList []int
-	if ports == "all" {
-		for i := 1; i <= 65535; i++ {
-			portsList = append(portsList, i)
-		}
-	} else {
-		parts := strings.Split(ports, "-")
-		if len(parts) != 2 {
-			log.Fatalf("Invalid port range: %s", ports)
-		}
-		start, err := strconv.Atoi(parts[0])
-		if err != nil {
-			log.Fatalf("Invalid start port: %s", parts[0])
-		}
-		end, err := strconv.Atoi(parts[1])
-		if err != nil {
-			log.Fatalf("Invalid end port: %s", parts[1])
-		}
-		if end < start {
-			log.Fatalf("Invalid port range: %s", ports)
-		}
-		for i := start; i <= end; i++ {
-			portsList = append(portsList, i)
-		}
-	}
-	sort.Ints(portsList)
-	return portsList
-}
 parsePorts est une fonction qui prend en entrée une chaîne de ports et renvoie une liste triée d'entiers représentant les ports.
 La fonction débute par initialiser une liste vide d'entiers appelée portsList.
 

@@ -15,7 +15,17 @@ Ce script utilise un package appelé "cobra" pour créer une commande de ligne a
 
 La commande racine, rootCmd, est définie en utilisant cobra.Command, et définit les options d'utilisation, la description courte et longue, ainsi que la fonction à exécuter lorsque la commande est appelée. La fonction Run appelle la fonction scanPorts en passant les variables globales comme arguments.
 
+La fonction init() est appelée automatiquement lorsque le script est chargé. Elle utilise les fonctions de drapeau de Cobra pour définir les options de ligne de commande pour les variables globales définies précédemment.
 
+rootCmd.Flags().StringVarP(&target, "target", "t", "", "the target IP to scan") définit une option de ligne de commande pour la variable target avec les étiquettes "t" et "target", une valeur par défaut vide et une description "the target IP to scan". La fonction MarkFlagRequired("target") indique que cette option de ligne de commande est obligatoire.
+
+rootCmd.Flags().StringVarP(&ports, "ports", "p", "", "the range of ports to scan (examples: 1024-65535, all)") définit une option de ligne de commande pour la variable ports avec les étiquettes "p" et "ports", une valeur par défaut vide et une description "the range of ports to scan (examples: 1024-65535, all)". La fonction MarkFlagRequired("ports") indique que cette option de ligne de commande est obligatoire.
+
+rootCmd.Flags().IntVarP(&workers, "workers", "w", 1, "the number of workers to use for scanning in parallel") définit une option de ligne de commande pour la variable workers avec les étiquettes "w" et "workers", une valeur par défaut de 1 et une description "the number of workers to use for scanning in parallel".
+
+rootCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "don't log, only show results") définit une option de ligne de commande pour la variable quiet avec les étiquettes "q" et "quiet", une valeur par défaut de false et une description "don't log, only show results".
+
+En résumé, cette fonction initialise les options de ligne de commande pour le script en définissant les options requises et facultatives pour l'analyse de ports.
 
 
 parsePorts est une fonction qui prend en entrée une chaîne de ports et renvoie une liste triée d'entiers représentant les ports.

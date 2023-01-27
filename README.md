@@ -11,6 +11,12 @@ go mod tidy
 
 
 Fonction expliqué 
+Ce script utilise un package appelé "cobra" pour créer une commande de ligne appelée "portscan". Il définit plusieurs variables globales, telles que target, ports, workers, et quiet, qui sont utilisées pour spécifier les détails de l'analyse de ports à effectuer.
+
+La commande racine, rootCmd, est définie en utilisant cobra.Command, et définit les options d'utilisation, la description courte et longue, ainsi que la fonction à exécuter lorsque la commande est appelée. La fonction Run appelle la fonction scanPorts en passant les variables globales comme arguments.
+
+
+
 
 parsePorts est une fonction qui prend en entrée une chaîne de ports et renvoie une liste triée d'entiers représentant les ports.
 La fonction débute par initialiser une liste vide d'entiers appelée portsList.

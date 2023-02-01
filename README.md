@@ -1,16 +1,17 @@
 # Essir22-prog-go
 Projet de Gautherot-Théo 
+
 You can run this script from the command line by using the go run command:
 
-go run main.go https://github.com/AsTheLow/Essir22-prog-go
+go run main.go package-main.go
 
 On va initié un module ( appellé package en cours) 
 
 go mod init ipscan
 go mod tidy
 
-Go mod init 
-main.go
+
+
 
 Fonction expliqué 
 Ce script utilise un package appelé "cobra" pour créer une commande de ligne appelée "portscan". Il définit plusieurs variables globales, telles que target, ports, workers, et quiet, qui sont utilisées pour spécifier les détails de l'analyse de ports à effectuer.
@@ -28,7 +29,6 @@ rootCmd.Flags().IntVarP(&workers, "workers", "w", 1, "the number of workers to u
 rootCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "don't log, only show results") définit une option de ligne de commande pour la variable quiet avec les étiquettes "q" et "quiet", une valeur par défaut de false et une description "don't log, only show results".
 
 En résumé, cette fonction initialise les options de ligne de commande pour le script en définissant les options requises et facultatives pour l'analyse de ports.
-
 
 parsePorts est une fonction qui prend en entrée une chaîne de ports et renvoie une liste triée d'entiers représentant les ports.
 La fonction débute par initialiser une liste vide d'entiers appelée portsList.

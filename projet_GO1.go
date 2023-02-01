@@ -101,6 +101,5 @@ func parsePorts(ports string) []int {
 			portsList = append(portsList, i)
 		}
 	}
-	sort.Ints(portsList)
 	return portsList
 }

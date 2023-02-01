@@ -2,7 +2,7 @@
 Projet de Gautherot-Théo 
 You can run this script from the command line by using the go run command:
 
-go run main.go https://www.example.com
+go run main.go https://github.com/AsTheLow/Essir22-prog-go/edit/main/README.md
 
 On va initié un module ( appellé package en cours) 
 

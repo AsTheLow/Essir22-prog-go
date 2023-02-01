@@ -9,24 +9,9 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"os/exec"
 
 	"github.com/spf13/cobra"
 )
-
-func init() {
-	// Initialisez un nouveau fichier go.mod pour votre projet
-	err := exec.Command("go", "mod", "init", "github.com/<username>/portscan").Run()
-	if err != nil {
-		log.Fatalf("Error initializing go mod: %v", err)
-	}
-
-	// Nettoyez les dépendances du projet
-	err = exec.Command("go", "mod", "tidy").Run()
-	if err != nil {
-		log.Fatalf("Error tidying go mod: %v", err)
-	}
-}
 
 var target string
 var ports string
@@ -119,4 +104,3 @@ func parsePorts(ports string) []int {
 	}
 	return portsList
 }
-

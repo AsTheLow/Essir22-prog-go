@@ -9,6 +9,8 @@ On va initié un module ( appellé package en cours)
 go mod init ipscan
 go mod tidy
 
+Go mod init 
+main.go
 
 Fonction expliqué 
 Ce script utilise un package appelé "cobra" pour créer une commande de ligne appelée "portscan". Il définit plusieurs variables globales, telles que target, ports, workers, et quiet, qui sont utilisées pour spécifier les détails de l'analyse de ports à effectuer.

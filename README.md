@@ -1,5 +1,6 @@
-# Essir22-prog-go
-Projet de Gautherot-Théo 
+# Projet de Gautherot-Théo Essir22-prog-go
+
+Dans le cadre de ma licence j'ai du réaliser un programme en Go qui va me permettre de faire un Portscan
 
 You can run this script from the command line by using the go run command:
 

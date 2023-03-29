@@ -7,7 +7,7 @@ Dans le cadre de ma licence j'ai du réaliser un programme en Go qui va me perme
 ### Prerequisites
 
 Tu auras besoin d'avoir déjà installer 
-- Go (vérification avec '''go version''')
+- Go (vérification avec ```go version```)
 - go.mod
 - go.sum
 
@@ -21,7 +21,6 @@ go run package-main.go --target <target-ip> --ports <ports-range>
 `<target-ip>` : l'adresse IP cible à scanner.
 
 `<ports-range>` : la plage de ports à scanner (exemples : 1024-65535, all).
-
 
 You can run this script from the command line by using the go run command:
 

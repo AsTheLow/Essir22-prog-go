@@ -4,7 +4,14 @@
 
 Dans le cadre de ma licence j'ai du réaliser un programme en Go qui va me permettre de faire un scanner de ports en Go qui peut scanner une plage de ports sur une adresse IP cible.
 
-## Utilisation
+### Prerequisites
+
+Tu auras besoin d'avoir déjà installer 
+- Go (vérification avec '''go version''')
+- go.mod
+- go.sum
+
+### Utilisation
 
 Pour utiliser le scanner de ports, exécutez la commande suivante :
 

@@ -1,4 +1,4 @@
-# Projet de Gautherot-Théo Essir22-prog-go
+# Projet Essir22-prog-go
 
 ## Port Scanner
 
